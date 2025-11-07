@@ -19,6 +19,7 @@ export default function MyOrders() {
         🛒 You have no orders yet.
       </p>
     );
+     const statusOrder = ["pending", "processing", "shipped", "delivered"];
 
   // Badge styles for each status
   const statusBadge = (status) => {
@@ -39,72 +40,80 @@ export default function MyOrders() {
   };
 
   // Optional: for progress bar stages
-  const statusOrder = ["pending", "processing", "shipped", "delivered"];
+  // After checking if there are orders
+// Sort orders so that pending ones appear first
+const sortedOrders = [...orders].sort((a, b) => {
+  if (a.status === "pending" && b.status !== "pending") return -1;
+  if (a.status !== "pending" && b.status === "pending") return 1;
+  return 0;
+});
 
-  return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">My Orders</h1>
+return (
+  <div className="max-w-5xl mx-auto p-6">
+    <h1 className="text-3xl font-bold mb-6 text-center">My Orders</h1>
 
-      {orders.map((order) => {
-        const statusIndex = statusOrder.indexOf(order.status);
+    {sortedOrders.map((order) => {
+      const statusIndex = statusOrder.indexOf(order.status);
 
-        return (
-          <div
-            key={order._id}
-            className="bg-white p-4 mb-6 rounded shadow-md"
-          >
-            {/* Order Header */}
-            <div className="flex justify-between items-center mb-4">
-              <span className={`px-3 py-1 rounded-full font-semibold ${statusBadge(order.status)}`}>
-                {order.status.toUpperCase()}
-              </span>
-              <p>
-                <span className="font-semibold">Total:</span> $
-                {order.total?.toFixed(2)}
-              </p>
-            </div>
+      return (
+        <div key={order._id} className="bg-white p-4 mb-6 rounded shadow-md">
+          {/* Order Header */}
+          <div className="flex justify-between items-center mb-4">
+            <span
+              className={`px-3 py-1 rounded-full font-semibold ${statusBadge(order.status)}`}
+            >
+              {order.status.toUpperCase()}
+            </span>
+            <p>
+              <span className="font-semibold">Total:</span> $
+              {order.total?.toFixed(2)}
+            </p>
+          </div>
 
-            {/* Progress Bar */}
-            <div className="flex items-center mb-4">
-              {statusOrder.map((s, i) => (
-                <div key={s} className="flex-1">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i <= statusIndex ? "bg-green-500" : "bg-gray-300"
-                    }`}
-                  />
-                  <p className="text-xs text-center mt-1">{s}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Products */}
-            <div className="space-y-3">
-              {order.products?.map((item) => (
+          {/* Progress Bar */}
+          <div className="flex items-center mb-4">
+            {statusOrder.map((s, i) => (
+              <div key={s} className="flex-1">
                 <div
-                  key={item._id}
-                  className="flex items-center justify-between bg-gray-50 p-3 rounded"
-                >
-                  <div className="flex items-center">
-                    <img
-                      src={item.product?.image}
-                      alt={item.product?.name}
-                      className="w-20 h-20 object-cover rounded mr-4"
-                    />
-                    <div>
-                      <p className="font-semibold">{item.product?.name}</p>
-                      <p className="text-gray-600">Quantity: {item.quantity}</p>
-                      <p className="text-gray-600">Price: ${item.product?.price?.toFixed(2)}</p>
-                    </div>
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i <= statusIndex ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                />
+                <p className="text-xs text-center mt-1">{s}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Products */}
+          <div className="space-y-3">
+            {order.products?.map((item) => (
+              <div
+                key={item._id}
+                className="flex items-center justify-between bg-gray-50 p-3 rounded"
+              >
+                <div className="flex items-center">
+                  <img
+                    src={item.product?.image}
+                    alt={item.product?.name}
+                    className="w-20 h-20 object-cover rounded mr-4"
+                  />
+                  <div>
+                    <p className="font-semibold">{item.product?.name}</p>
+                    <p className="text-gray-600">Quantity: {item.quantity}</p>
+                    <p className="text-gray-600">
+                      Price: ${item.product?.price?.toFixed(2)}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <p className="text-sm text-gray-400 mt-3">Order ID: {order._id}</p>
+              </div>
+            ))}
           </div>
-        );
-      })}
-    </div>
-  );
+
+          <p className="text-sm text-gray-400 mt-3">Order ID: {order._id}</p>
+        </div>
+      );
+    })}
+  </div>
+);
+
 }

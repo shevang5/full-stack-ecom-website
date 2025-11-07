@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { asyncLogoutUsers } from "../store/action/userActions";
 import axios from "../api/config";
@@ -10,6 +10,8 @@ const Navbar = () => {
   // Assuming your user reducer stores a single logged-in user
   const rawUser = useSelector((state) => state.usersReducer.user);
   const user = rawUser?.user; // extract the nested user object
+
+  const navigate = useNavigate();
 
   // show total product count (sum of quantities) from server-side cart
   const [cartCount, setCartCount] = useState(0);
@@ -41,6 +43,7 @@ const Navbar = () => {
 
   const logout = () => {
     dispatch(asyncLogoutUsers());
+    navigate("/login");
   };
 
   return (
@@ -51,7 +54,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive ? "text-blue-500" : "text-gray-800 hover:text-blue-700"
             }
-            to="/home"
+            to="/"
           >
             Home
           </NavLink>
@@ -66,6 +69,8 @@ const Navbar = () => {
             Products
           </NavLink>
         </li>
+        {user && (
+          <>
         <li className="mr-6 relative">
           <NavLink
             className={({ isActive }) =>
@@ -90,6 +95,9 @@ const Navbar = () => {
           >My Orders
           </NavLink>
         </li>
+          
+          </>
+        )}
 
         {/* Show admin links only if role is admin */}
         {user && user.role === "admin" && (

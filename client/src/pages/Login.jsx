@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { asyncLoginUsers } from '../store/action/userActions'
 import { nanoid } from 'nanoid'
@@ -9,11 +9,13 @@ import { nanoid } from 'nanoid'
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm()
   const [userId, setUserId] = useState('')
+    const navigate = useNavigate();
     const dispatch = useDispatch()
   const onSubmit = (data) => {
     data.id = nanoid()
     dispatch(asyncLoginUsers(data))
     console.log(data)
+    navigate('/products')
   }
 
   return (

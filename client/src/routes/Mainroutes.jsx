@@ -1,32 +1,37 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import Home from '../pages/home'
-import Products from '../pages/Products'
-import Login from '../pages/Login'
-import Register from '../pages/register'
-import ProductDetails from '../pages/users/productDetail'
-import CreateProduct from "../pages/admin/CreateProduct"
-import OrdersPage from '../pages/OrdersPage'  // ✅ new import
+import Loader from '../components/Loader'
 
-import UpdateProduct from '../pages/admin/updateProduct'  // ✅ renamed
-import Cart from '../pages/Cart'
-import AdminOrders from '../pages/admin/AdminOrders'
+// Lazy-loaded pages
+const Home = lazy(() => import('../pages/home'))
+const Products = lazy(() => import('../pages/Products'))
+const Login = lazy(() => import('../pages/Login'))
+const Register = lazy(() => import('../pages/register'))
+const ProductDetails = lazy(() => import('../pages/users/productDetail'))
+const CreateProduct = lazy(() => import('../pages/admin/CreateProduct'))
+const OrdersPage = lazy(() => import('../pages/OrdersPage'))
+const UpdateProduct = lazy(() => import('../pages/admin/updateProduct'))
+const Cart = lazy(() => import('../pages/Cart'))
+const AdminOrders = lazy(() => import('../pages/admin/AdminOrders'))
 
 const Mainroutes = () => {
   return (
-    <Routes>
-      <Route path='/' element={<Home />} />
-      <Route path='/products' element={<Products />} />
-      <Route path='/products/:id' element={<ProductDetails />} />
-      <Route path='/cart' element={<Cart />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/myorders" element={<OrdersPage />} /> {/* ✅ new route */}
-      <Route path="/admin/orders" element={<AdminOrders />} />
+    <Suspense fallback={<Loader />}>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/products' element={<Products />} />
+        <Route path='/products/:id' element={<ProductDetails />} />
+        <Route path='/cart' element={<Cart />} />
+        <Route path="/login" element={<Login />} />
 
-      <Route path="/admin/create-product" element={<CreateProduct />} />
-      <Route path="/admin/update-product/:id" element={<UpdateProduct />} /> {/* ✅ fixed */}
-    </Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/myorders" element={<OrdersPage />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+
+        <Route path="/admin/create-product" element={<CreateProduct />} />
+        <Route path="/admin/update-product/:id" element={<UpdateProduct />} />
+      </Routes>
+    </Suspense>
   )
 }
 

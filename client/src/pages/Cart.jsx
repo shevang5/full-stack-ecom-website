@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 const Cart = () => {
   const [cart, setCart] = useState(null);
+  const [updatingIds, setUpdatingIds] = useState({});
 
   useEffect(() => {
     loadCart();
@@ -20,10 +21,18 @@ const Cart = () => {
 
   const updateQty = async (id, type) => {
     try {
-      await axios.put(`/cart/item/${id}`, { type }); // ✅ check endpoint name
-      loadCart();
+      // mark this item as updating to prevent duplicate clicks
+      setUpdatingIds((s) => ({ ...s, [id]: true }));
+
+      // call the update endpoint — it returns the updated cart, so use it
+      const { data } = await axios.put(`/cart/item/${id}`, { type }); // returns updated cart
+
+      // update local state using returned cart (avoid an extra GET request)
+      setCart(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setUpdatingIds((s) => ({ ...s, [id]: false }));
     }
   };
 
@@ -50,9 +59,10 @@ const Cart = () => {
       )
     };
 
-    await axios.post("/orders", orderData); // ✅ send actual data
+    await axios.post("/orders", orderData);
+    setCart({ items: [] });   // immediate UI clear
+    loadCart();               // re-sync with server
     alert("✅ Order Placed Successfully!");
-    loadCart(); // clear or reload cart
   } catch (err) {
     console.log(err.response?.data || err.message);
     alert("❌ Failed to place order");
@@ -78,46 +88,53 @@ const Cart = () => {
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
 
-      {cart.items.map((item) => (
-        <div
-          key={item._id}
-          className="flex items-center justify-between bg-white p-4 mb-4 rounded shadow-md"
-        >
-          <img
-            src={item.product.image}
-            className="w-20 h-20 object-cover rounded"
-            alt={item.product.name}
-          />
-
-          <div className="w-1/3">
-            <h2 className="font-semibold text-lg">{item.product.name}</h2>
-            <p className="text-gray-600">${item.product.price}</p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => updateQty(item._id, "dec")}
-              className="px-3 py-1 bg-gray-200 rounded"
-            >
-              -
-            </button>
-            <span>{item.quantity}</span>
-            <button
-              onClick={() => updateQty(item._id, "inc")}
-              className="px-3 py-1 bg-gray-200 rounded"
-            >
-              +
-            </button>
-          </div>
-
-          <button
-            onClick={() => removeItem(item.product._id)}
-            className="text-red-500 hover:underline"
+      {cart.items.map(item => {
+        if (!item.product) return (
+          <div key={item._id} className="p-4">Product removed</div>
+        );
+        return (
+          <div
+            key={item._id}
+            className="flex items-center justify-between bg-white p-4 mb-4 rounded shadow-md"
           >
-            Remove
-          </button>
-        </div>
-      ))}
+            <img
+              src={item.product.image}
+              className="w-20 h-20 object-cover rounded"
+              alt={item.product.name}
+            />
+
+            <div className="w-1/3">
+              <h2 className="font-semibold text-lg">{item.product.name}</h2>
+              <p className="text-gray-600">${item.product.price}</p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => updateQty(item._id, "dec")}
+                className={`px-3 py-1 rounded ${updatingIds[item._id] ? 'bg-gray-300 cursor-wait' : 'bg-gray-200 hover:bg-gray-300'}`}
+                disabled={!!updatingIds[item._id]}
+              >
+                {updatingIds[item._id] ? '...' : '-'}
+              </button>
+              <span>{item.quantity}</span>
+              <button
+                onClick={() => updateQty(item._id, "inc")}
+                className={`px-3 py-1 rounded ${updatingIds[item._id] ? 'bg-gray-300 cursor-wait' : 'bg-gray-200 hover:bg-gray-300'}`}
+                disabled={!!updatingIds[item._id]}
+              >
+                {updatingIds[item._id] ? '...' : '+'}
+              </button>
+            </div>
+
+            <button
+              onClick={() => removeItem(item.product._id)}
+              className="text-red-500 hover:underline"
+            >
+              Remove
+            </button>
+          </div>
+        )
+      })}
 
       <div className="text-right text-2xl font-semibold mt-4">
         Total: <span className="text-green-600">${total}</span>

@@ -1,16 +1,17 @@
 
 import axios from 'axios';
-import React, { useEffect } from 'react'
+import React, { useEffect, Suspense, lazy } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import Mainroutes from './routes/Mainroutes';
-import Navbar from './components/Navbar';
+import Loader from './components/Loader'
 import { asyncCurrentUsers, asyncLogoutUsers } from './store/action/userActions';
 import { asyncLoadProducts } from './store/action/productActions';
 import { asyncCreateOrder } from './store/action/orderActions';
 
+// Lazy load layout and routes
+const Navbar = lazy(() => import('./components/Navbar'))
+const Mainroutes = lazy(() => import('./routes/Mainroutes'))
 
 const App = () => {
-  
   const dispatch = useDispatch();
 
   const {user} = useSelector((state) => state.usersReducer)
@@ -19,18 +20,18 @@ const App = () => {
 
   useEffect(()=>{
     dispatch(asyncLoadProducts())
-  },[])
+  },[dispatch])
 
   useEffect(()=>{
     dispatch(asyncCurrentUsers())
-  })
+  },[dispatch])
   
-
   return (
     <div>
-      <Navbar/>
-      <Mainroutes/>
-    
+      <Suspense fallback={<Loader />}>
+        <Navbar/>
+        <Mainroutes/>
+      </Suspense>
     </div>
   )
 }
