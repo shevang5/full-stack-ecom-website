@@ -6,22 +6,25 @@ import Mainroutes from './routes/Mainroutes';
 import Navbar from './components/Navbar';
 import { asyncCurrentUsers, asyncLogoutUsers } from './store/action/userActions';
 import { asyncLoadProducts } from './store/action/productActions';
+import { asyncCreateOrder } from './store/action/orderActions';
+
 
 const App = () => {
-  const data = useSelector(state => state.user)
+  
   const dispatch = useDispatch();
 
-  console.log(data);
-  
-  useEffect(() => {
+  const {user} = useSelector((state) => state.usersReducer)
+  const {products} = useSelector((state) => state.productsReducers)
+  const {orders} = useSelector((state) => state.orders)
 
-    dispatch(asyncCurrentUsers())
+  useEffect(()=>{
     dispatch(asyncLoadProducts())
-    dispatch(asyncCurrentUsers());
-    
-    // dispatch(asyncLogoutUsers());
+  },[])
 
-  }, [])
+  useEffect(()=>{
+    dispatch(asyncCurrentUsers())
+  })
+  
 
   return (
     <div>
